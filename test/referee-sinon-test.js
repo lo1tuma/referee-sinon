@@ -1,4 +1,3 @@
-require("../lib/referee-sinon");
 var buster = require("buster-test");
 var sinon = require("sinon");
 var referee = require("referee");
@@ -6,6 +5,7 @@ var formatio = require("formatio");
 var assert = referee.assert;
 var refute = referee.refute;
 var expect = referee.expect;
+require("../lib/referee-sinon")(referee, sinon);
 
 var formatter = formatio.configure({ quoteStrings: false });
 referee.format = function () {
@@ -93,7 +93,18 @@ var testCase = buster.testCase("referee-sinon", {
                             "\n    spy(null, 1, 2)";
                     assert.equals(e.message, message);
                 }
-            }
+            },
+
+            "doesn't pass undefined to [].slice (IE8 doesn't like that)":
+                function () {
+
+                    var spy = sinon.spy();
+                    spy('foo');
+                    sinon.spy(Array.prototype, "slice");
+
+                    assert.calledWith(spy, 'foo');
+                    assert.calledWithExactly(Array.prototype.slice, 1);
+                }
         },
 
         "calledWithExactly": {
